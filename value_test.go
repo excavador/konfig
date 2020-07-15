@@ -142,6 +142,8 @@ func TestSetStruct(t *testing.T) {
 		func(t *testing.T) {
 			type TestConfigSub struct {
 				VV  string  `konfig:"vv"`
+				PS1 *string `konfig:"ps1"`
+				PS2 *string `konfig:"ps2"`
 				TT  int     `konfig:"tt"`
 				B   bool    `konfig:"bool"`
 				F   float64 `konfig:"float64"`
@@ -156,10 +158,12 @@ func TestSetStruct(t *testing.T) {
 				SubMapT    map[string]TestConfigSub  `konfig:"submapt"`
 			}
 
+			var ps1 = "test3"
 			var expectedConfig = TestConfig{
 				V: "test",
 				T: TestConfigSub{
 					VV:  "test2",
+					PS1: &ps1,
 					TT:  1,
 					B:   true,
 					F:   1.9,
@@ -200,6 +204,7 @@ func TestSetStruct(t *testing.T) {
 			var v = Values{
 				"v":                 "test",
 				"sub.vv":            "test2",
+				"sub.ps1":           ps1,
 				"sub.tt":            1,
 				"subt.tt":           2,
 				"sub.bool":          true,
@@ -223,6 +228,9 @@ func TestSetStruct(t *testing.T) {
 			var configValue = Value().(TestConfig)
 			require.Equal(t, "test", configValue.V)
 			require.Equal(t, "test2", configValue.T.VV)
+			require.NotNil(t, configValue.T.PS1)
+			require.Equal(t, "test3", *configValue.T.PS1)
+			require.Nil(t, configValue.T.PS2)
 			require.Equal(t, 1, configValue.T.TT)
 			require.Equal(t, 2, configValue.SubT.TT)
 			require.Equal(t, true, configValue.T.B)

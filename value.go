@@ -353,34 +353,107 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 
 func castValue(f interface{}, v interface{}) interface{} {
 	switch f.(type) {
+	// string
+	case *string:
+		value := cast.ToString(v)
+		return &value
 	case string:
 		return cast.ToString(v)
+	// bool
+	case *bool:
+		value := cast.ToBool(v)
+		return &value
 	case bool:
 		return cast.ToBool(v)
+	// int
+	case *int:
+		value := cast.ToInt(v)
+		return &value
 	case int:
 		return cast.ToInt(v)
-	case int64:
-		return cast.ToInt64(v)
-	case int32:
-		return cast.ToInt32(v)
-	case float64:
-		return cast.ToFloat64(v)
-	case float32:
-		return cast.ToFloat32(v)
-	case uint64:
-		return cast.ToUint64(v)
-	case uint32:
-		return cast.ToUint32(v)
+	// uint
+	case *uint:
+		value := cast.ToUint(v)
+		return &value
+	case uint:
+		return cast.ToUint(v)
+	// int8
+	case *int8:
+		value := cast.ToInt8(v)
+		return &value
+	case int8:
+		return cast.ToInt8(v)
+	// unt8
+	case *uint8:
+		value := cast.ToUint8(v)
+		return &value
 	case uint8:
 		return cast.ToUint8(v)
+	// int16
+	case *int16:
+		value := cast.ToInt16(v)
+		return &value
+	case int16:
+		return cast.ToInt16(v)
+	// unit16
+	case *uint16:
+		value := cast.ToUint16(v)
+		return &value
+	case uint16:
+		return cast.ToUint16(v)
+	// int32
+	case *int32:
+		value := cast.ToInt32(v)
+		return &value
+	case int32:
+		return cast.ToInt32(v)
+	// uint32
+	case *uint32:
+		value := cast.ToUint32(v)
+		return &value
+	case uint32:
+		return cast.ToUint32(v)
+	// int64
+	case *int64:
+		value := cast.ToInt64(v)
+		return &value
+	case int64:
+		return cast.ToInt64(v)
+	// uint64
+	case *uint64:
+		value := cast.ToUint64(v)
+		return &value
+	case uint64:
+		return cast.ToUint64(v)
+	// float32
+	case *float32:
+		value := cast.ToFloat32(v)
+		return &value
+	case float32:
+		return cast.ToFloat32(v)
+	// float64
+	case *float64:
+		value := cast.ToFloat64(v)
+		return &value
+	case float64:
+		return cast.ToFloat64(v)
+	// time.Time
+	case *time.Time:
+		value := cast.ToTime(v)
+		return &value
+	case time.Time:
+		return cast.ToTime(v)
+	// time.Duration
+	case *time.Duration:
+		value := cast.ToDuration(v)
+		return &value
+	case time.Duration:
+		return cast.ToDuration(v)
+	// rest
 	case []string:
 		return cast.ToStringSlice(v)
 	case []int:
 		return cast.ToIntSlice(v)
-	case time.Time:
-		return cast.ToTime(v)
-	case time.Duration:
-		return cast.ToDuration(v)
 	case map[string]string:
 		return cast.ToStringMapString(v)
 	}
