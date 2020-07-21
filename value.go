@@ -220,7 +220,12 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 			var field = valValue.FieldByName(fieldValue.Name)
 			if field.CanSet() {
 				if !unmarshal(field, v) {
-					field.Set(reflect.ValueOf(castValue(field.Interface(), v)))
+					result := castValue(field.Interface(), v)
+					if field.CanAddr() && result == nil {
+						field.Set(reflect.Zero(field.Type()))
+					} else {
+						field.Set(reflect.ValueOf(result))
+					}
 				}
 			}
 			set = true
