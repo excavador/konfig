@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -34,6 +35,14 @@ type value struct {
 	vt    reflect.Type
 	mut   *sync.Mutex
 	isMap bool
+}
+
+func sorted(source map[string]interface{}) (result []string) {
+	for key := range source {
+		result = append(result, key)
+	}
+	sort.Strings(result)
+	return
 }
 
 // Value returns the value bound to the root config store
@@ -144,8 +153,8 @@ func (val *value) set(k string, v interface{}) {
 		var mapV = configValue.(map[string]interface{})
 		var nMap = make(map[string]interface{})
 
-		for kk, vv := range mapV {
-			nMap[kk] = vv
+		for _, kk := range sorted(mapV) {
+			nMap[kk] = mapV[kk]
 		}
 
 		nMap[k] = v
@@ -177,12 +186,12 @@ func (val *value) setValues(x s) {
 		var mapV = configValue.(map[string]interface{})
 		var nMap = make(map[string]interface{})
 
-		for kk, vv := range mapV {
-			nMap[kk] = vv
+		for _, kk := range sorted(mapV) {
+			nMap[kk] = mapV[kk]
 		}
 
-		for kk, vv := range x {
-			nMap[kk] = vv
+		for _, kk := range sorted(x) {
+			nMap[kk] = x[kk]
 		}
 
 		val.v.Store(nMap)
@@ -193,8 +202,8 @@ func (val *value) setValues(x s) {
 	var t = reflect.TypeOf(configValue)
 	var nVal = reflect.New(t)
 
-	for kk, vv := range x {
-		val.setStruct(kk, vv, nVal)
+	for _, kk := range sorted(x) {
+		val.setStruct(kk, x[kk], nVal)
 	}
 
 	val.v.Store(nVal.Elem().Interface())
