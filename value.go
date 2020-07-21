@@ -1,6 +1,7 @@
 package konfig
 
 import (
+	"encoding"
 	"errors"
 	"fmt"
 	"reflect"
@@ -218,7 +219,9 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 		if tag == k || strings.EqualFold(fieldName, k) {
 			var field = valValue.FieldByName(fieldValue.Name)
 			if field.CanSet() {
-				field.Set(reflect.ValueOf(castValue(field.Interface(), v)))
+				if !unmarshal(field, v) {
+					field.Set(reflect.ValueOf(castValue(field.Interface(), v)))
+				}
 			}
 			set = true
 			continue
@@ -349,6 +352,25 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 	}
 
 	return set
+}
+
+func unmarshalText(f interface{}, v interface{}) bool {
+	str := cast.ToString(v)
+	if tu, ok := f.(encoding.TextUnmarshaler); ok {
+		err := tu.UnmarshalText([]byte(str))
+		return err == nil
+	}
+	return false
+}
+
+func unmarshal(f reflect.Value, v interface{}) bool {
+	if unmarshalText(f.Interface(), v) {
+		return true
+	} else if f.CanAddr() && unmarshalText(f.Addr().Interface(), v) {
+		return true
+	} else {
+		return false
+	}
 }
 
 func castValue(f interface{}, v interface{}) interface{} {
