@@ -192,7 +192,7 @@ type S struct {
 var (
 	c    *S
 	once sync.Once
-	mu sync.Mutex
+	mu   sync.Mutex
 )
 
 // Init initiates the global config store with the given Config cfg
