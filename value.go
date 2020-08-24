@@ -262,16 +262,25 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 				// if map key is a string and elem is a struct
 				// else we skip this field
 				if keyKind == reflect.String {
-
 					var structType reflect.Type
 					var ptr bool
-
-					if eltKind == reflect.Struct {
-						structType = fieldValue.Type.Elem()
-					} else if eltKind == reflect.Ptr && fieldValue.Type.Elem().Elem().Kind() == reflect.Struct {
+					switch {
+					case eltKind == reflect.Ptr && fieldValue.Type.Elem().Elem().Kind() == reflect.Struct:
 						structType = fieldValue.Type.Elem().Elem()
 						ptr = true
-					} else {
+					case eltKind == reflect.Struct:
+						structType = fieldValue.Type.Elem()
+					case eltKind == reflect.Ptr && fieldValue.Type.Elem().Elem().Kind() == reflect.String:
+						fallthrough
+					case eltKind == reflect.String:
+						var field = valValue.FieldByName(fieldValue.Name)
+						if field.IsNil() {
+							field.Set(reflect.MakeMap(fieldValue.Type))
+						}
+						field.SetMapIndex(reflect.ValueOf(nK), reflect.ValueOf(v))
+						set = true
+						continue
+					default:
 						continue
 					}
 
