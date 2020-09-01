@@ -377,19 +377,30 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 	return set
 }
 
-func unmarshalText(f interface{}, v interface{}) bool {
-	str := cast.ToString(v)
-	if tu, ok := f.(encoding.TextUnmarshaler); ok {
+func unmarshalText(f reflect.Value, v interface{}) bool {
+	if !f.Type().Implements(reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()) {
+		return false
+	}
+	if tu, ok := f.Interface().(encoding.TextUnmarshaler); ok {
+		if f.Type().Kind() == reflect.Ptr && f.IsNil() {
+			empty := reflect.New(f.Type().Elem())
+			f.Set(empty)
+			tu, _ = f.Interface().(encoding.TextUnmarshaler)
+		}
+		str := cast.ToString(v)
 		err := tu.UnmarshalText([]byte(str))
+		if err != nil {
+			panic(err)
+		}
 		return err == nil
 	}
 	return false
 }
 
 func unmarshal(f reflect.Value, v interface{}) bool {
-	if unmarshalText(f.Interface(), v) {
+	if unmarshalText(f, v) {
 		return true
-	} else if f.CanAddr() && unmarshalText(f.Addr().Interface(), v) {
+	} else if f.CanAddr() && unmarshalText(f.Addr(), v) {
 		return true
 	} else {
 		return false
