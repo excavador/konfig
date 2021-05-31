@@ -124,11 +124,21 @@ func getStructKeys(t reflect.Type, prefix string) []string {
 
 		// use field name when konfig tag is not specified
 		if tag == "" {
-			tag = strings.ToLower(fieldValue.Name)
+			if fieldValue.Name == "" {
+				tag = ",embed"
+			} else {
+				tag = strings.ToLower(fieldValue.Name)
+			}
 		}
 
 		if fieldValue.Type.Kind() == reflect.Struct {
-			structKeys := getStructKeys(fieldValue.Type, tag+KeySep)
+			var prefix string
+			if tag == ",embed" {
+				prefix = ""
+			} else {
+				prefix = tag + KeySep
+			}
+			structKeys := getStructKeys(fieldValue.Type, prefix)
 			keys = append(keys, structKeys...)
 
 			// don't add the parent tag
@@ -223,6 +233,11 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 		var fieldName = fieldValue.Name
 		var tag = fieldValue.Tag.Get(TagKey)
 
+		// use field name when konfig tag is not specified
+		if tag == "" && fieldValue.Name == "" {
+			tag = ",embed"
+		}
+
 		// check tag, if it matches key
 		// assign v to field
 		if tag == k || strings.EqualFold(fieldName, k) {
@@ -241,12 +256,15 @@ func (val *value) setStruct(k string, v interface{}, targetValue reflect.Value) 
 			continue
 
 			// else if key has tag in prefix
-		} else if strings.HasPrefix(k, tag+KeySep) ||
+		} else if tag == ",embed" ||
+			strings.HasPrefix(k, tag+KeySep) ||
 			strings.HasPrefix(strings.ToLower(k), strings.ToLower(fieldName)+KeySep) {
 
 			var nK string
 
-			if strings.HasPrefix(k, tag+KeySep) {
+			if tag == ",embed" {
+				nK = k
+			} else if strings.HasPrefix(k, tag+KeySep) {
 				nK = k[len(tag+KeySep):]
 			} else {
 				nK = k[len(fieldName+KeySep):]
